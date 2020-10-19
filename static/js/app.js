@@ -11,50 +11,42 @@ function BuildOptionMenu() {
     })
   });
 };
-BuildOptionMenu()
+BuildOptionMenu();
 
 
+// Function to get the data  and build the initial/start up page with graphs shown for Id 940
+function BuildStartPage() {
+    d3.json("./data/samples.json").then(function(data) {
+     
 
+    buildBarChart(data, 940);
 
+    BuildBubbleChart(data, 940);
 
-
-function geData() {
-    d3.json("./data/samples.json").then(function(x) {
-      var data = x;
-      console.log(data);
-      var samples = data.samples;
-      
-      var dataId940 = samples.filter(sample =>sample.id == 940);
-      // console.log(dataId940);
-      var Ids = dataId940[0].otu_ids;
-      var Ids10 = dataId940[0].otu_ids.slice(0,10);
-      // console.log(Ids);
-      var IdsAsString = Ids10.map(Id => "OTU "+Id);
-      // console.log(IdsAsString);
-      var sample_value = dataId940[0].sample_values;
-      var sample_value10 = dataId940[0].sample_values.slice(0,10).reverse();
-      // console.log(sample_value);
-      var sample_labels = dataId940[0].otu_labels;
-      var sample_labels10 = dataId940[0].otu_labels.slice(0,10);
-      // console.log(sample_labels);
-
-      var mData = data.metadata.filter( d => d.id == 940)[0];
-      console.log(mData)
-
-    buildBarChart(IdsAsString, sample_value10, sample_labels10);
-
-    BuildBubbleChart(Ids, sample_value, sample_labels);
-
-    buildMDataPanel(mData);
+    buildMDataPanel(data, 940);
 
     });
 };
-geData()
+BuildStartPage();
 
 
 
-function buildBarChart(IdsAsString, sample_value10, sample_labels10){
+function buildBarChart(data, variableID){
 
+
+  var samples = data.samples;   
+  var dataId940 = samples.filter(sample =>sample.id == variableID);
+  // console.log(dataId940);
+  
+  var Ids10 = dataId940[0].otu_ids.slice(0,10);
+  // console.log(Ids);
+  var IdsAsString = Ids10.map(Id => "OTU "+Id);
+
+  
+  var sample_value10 = dataId940[0].sample_values.slice(0,10).reverse();
+  // console.log(sample_value);
+  
+  var sample_labels10 = dataId940[0].otu_labels.slice(0,10);
 
 var trace1 = {
   x: sample_value10,
@@ -86,7 +78,16 @@ Plotly.newPlot("bar", data, layout);
 
 };
 
-function BuildBubbleChart(Ids, sample_value, sample_labels){
+
+function BuildBubbleChart(data, variableID){
+
+
+  var samples = data.samples;    
+  var dataId940 = samples.filter(sample =>sample.id == variableID);
+  var Ids = dataId940[0].otu_ids;
+  var sample_value = dataId940[0].sample_values;
+  var sample_labels = dataId940[0].otu_labels;
+ 
 
 var trace1 = {
   x: Ids,
@@ -117,11 +118,45 @@ Plotly.newPlot("bubble", data, layout);
 
 };
 
-function buildMDataPanel (mData){
+function buildMDataPanel (data, variableID){
+
+  var mData = data.metadata.filter( d => d.id == variableID)[0];
+  
   var div = d3.select("#sample-metadata");
+    // remove any children from the div 
+    div.html("");
   Object.entries(mData).forEach(([key, value]) => {
     var p = div.append("p");
     p.text(`${key}: ${value}`);
   });
 };
 
+
+// On change to the DOM, call optionChanged()
+// d3.selectAll("#selDataset").on("change", getData);
+
+
+// Function called by DOM changes
+function getData(){
+
+  var dropdownMenu = d3.select("#selDataset");
+  // Assign the value of the dropdown menu option to a variable
+  var variableID = dropdownMenu.property("value");
+  console.log(variableID);
+  // Call function to update the chart
+  BuildWithFilter(variableID);
+};
+
+
+function BuildWithFilter(variableID) {
+  d3.json("./data/samples.json").then(function(data) {
+   
+
+  buildBarChart(data, variableID);
+
+  BuildBubbleChart(data, variableID);
+
+  buildMDataPanel(data, variableID);
+
+  });
+};
