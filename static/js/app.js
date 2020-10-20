@@ -19,6 +19,8 @@ function BuildStartUpPage() {
   BuildBubbleChart(data, 940);
 // Call the function that builds the Meta data panel, giving the Id value of 940
   buildMDataPanel(data, 940);
+// Call the function that builds the Meta data panel, giving the Id value of 940
+  BuildGauge (data, 940);
   
   });
 };
@@ -154,5 +156,76 @@ function BuildWithFilter(variableID) {
 
   buildMDataPanel(data, variableID);
 
+  BuildGauge (data, variableID);
+
   });
 };
+
+// Function that builds the Gauge for the variable Id that is selected.
+function BuildGauge (data, variableID){
+
+  // Idea and base code modified from https://com2m.de/blog/technology/gauge-charts-with-plotly/
+
+  // Set the value for the tip of the arrow
+  var mData = data.metadata.filter( d => d.id == variableID)[0];
+  var WashFreq = mData.wfreq
+  var level = 20 * WashFreq;
+  
+  // Trig to calc meter point
+  var degrees = 180 - level,
+       radius = .5;
+  var radians = degrees * Math.PI / 180;
+  var x = radius * Math.cos(radians);
+  var y = radius * Math.sin(radians);
+  var path1 = (degrees < 45 || degrees > 135) ? 'M -0.0 -0.025 L 0.0 0.025 L ' : 'M -0.025 -0.0 L 0.025 0.0 L ';
+  
+  var mainPath = path1,
+       pathX = String(x),
+       space = ' ',
+       pathY = String(y),
+       pathEnd = ' Z';
+  var path = mainPath.concat(pathX,space,pathY,pathEnd);
+  
+  var data = [{ type: 'scatter',
+     x: [0], y:[0],
+      marker: {size: 14, color:'850000'},
+      showlegend: false,
+      name: 'Scrubs',
+      text: WashFreq,
+      hoverinfo: 'text+name'},
+    { values: [1,1,1,1,1,1,1,1,1,9],
+    rotation: 90,
+    text: ['8-9', '7-8','6-7', '5-6', '4-5', '3-4', '2-3', '1-2', '0-1',''],
+    textinfo: 'text',
+    textposition:'inside',
+    marker: {colors:['#2EC912', '#4CD233','#6AE154','#84E472',
+                           '#9DE98F', '#B4ECAA', '#C9ECAA','#DDEAB0','#F4F2B7',
+                           'White']},
+    hoverinfo: 'none',
+    hole: .4,
+    type: 'pie',
+    showlegend: false
+  }];
+  
+  var layout = {
+    shapes:[{
+        type: 'path',
+        path: path,
+        fillcolor: '850000',
+        line: {
+          color: '850000'
+        }
+      }],
+      title: { text: "<b>Belly Button Washing Frequency</b> <br> Scrubs per Week", font: { size: 18 } },  
+    height: 500,
+    width: 500,
+    xaxis: {zeroline:false, showticklabels:false,
+               showgrid: false, range: [-1, 1]},
+    yaxis: {zeroline:false, showticklabels:false,
+               showgrid: false, range: [-1, 1]}
+  };
+  
+  Plotly.newPlot("gauge", data, layout);
+  };
+
+  
