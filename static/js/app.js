@@ -1,53 +1,46 @@
 
-// Function to get the data and build a options menu for the different IDs
-function BuildOptionMenu() {
+// Function to get the data  and build the initial/start up page with graphs shown for Id 940,
+// as well as build a options menu for the different IDs
+function BuildStartUpPage() {
   d3.json("./data/samples.json").then(function(data) {
     var names = data.names;
+
+    // ***Build the options menu
     var select = d3.select("#selDataset");
     // For each Id in the names array, creates a option tag and adds the ID as a text
     names.forEach(id => {
       var option = select.append("option");
       option.text(id);
     })
+
+// Call the function that builds the Bar Chart, giving the Id value of 940
+  buildBarChart(data, 940);
+// Call the function that builds the Bubble Chart, giving the Id value of 940
+  BuildBubbleChart(data, 940);
+// Call the function that builds the Meta data panel, giving the Id value of 940
+  buildMDataPanel(data, 940);
+  
   });
 };
-BuildOptionMenu();
+
+BuildStartUpPage();
 
 
-// Function to get the data  and build the initial/start up page with graphs shown for Id 940
-function BuildStartPage() {
-    d3.json("./data/samples.json").then(function(data) {
-     
-
-    buildBarChart(data, 940);
-
-    BuildBubbleChart(data, 940);
-
-    buildMDataPanel(data, 940);
-
-    });
-};
-BuildStartPage();
-
-
-
+// Creating a function that creates the Bar chart
 function buildBarChart(data, variableID){
 
-
+  // Extract the needed data from the data(JSON), and save it as a variables
   var samples = data.samples;   
-  var dataId940 = samples.filter(sample =>sample.id == variableID);
-  // console.log(dataId940);
+  var dataId = samples.filter(sample =>sample.id == variableID);
   
-  var Ids10 = dataId940[0].otu_ids.slice(0,10);
-  // console.log(Ids);
+  var Ids10 = dataId[0].otu_ids.slice(0,10);
   var IdsAsString = Ids10.map(Id => "OTU "+Id);
 
+  var sample_value10 = dataId[0].sample_values.slice(0,10).reverse();
   
-  var sample_value10 = dataId940[0].sample_values.slice(0,10).reverse();
-  // console.log(sample_value);
-  
-  var sample_labels10 = dataId940[0].otu_labels.slice(0,10);
+  var sample_labels10 = dataId[0].otu_labels.slice(0,10);
 
+// Create the trace, layout and the plot
 var trace1 = {
   x: sample_value10,
   y: IdsAsString,
@@ -78,17 +71,17 @@ Plotly.newPlot("bar", data, layout);
 
 };
 
-
+// Creating a function that creates the Bubble chart
 function BuildBubbleChart(data, variableID){
 
-
+// Extract the needed data from the data(JSON), and save it as a variables
   var samples = data.samples;    
-  var dataId940 = samples.filter(sample =>sample.id == variableID);
-  var Ids = dataId940[0].otu_ids;
-  var sample_value = dataId940[0].sample_values;
-  var sample_labels = dataId940[0].otu_labels;
+  var dataId = samples.filter(sample =>sample.id == variableID);
+  var Ids = dataId[0].otu_ids;
+  var sample_value = dataId[0].sample_values;
+  var sample_labels = dataId[0].otu_labels;
  
-
+// Create the trace, layout and the plot
 var trace1 = {
   x: Ids,
   y: sample_value,
@@ -118,12 +111,14 @@ Plotly.newPlot("bubble", data, layout);
 
 };
 
+
+// Creating a function that creates the MetaData panel
 function buildMDataPanel (data, variableID){
 
   var mData = data.metadata.filter( d => d.id == variableID)[0];
   
   var div = d3.select("#sample-metadata");
-    // remove any children from the div 
+    // remove any children from the div, 
     div.html("");
   Object.entries(mData).forEach(([key, value]) => {
     var p = div.append("p");
@@ -131,7 +126,7 @@ function buildMDataPanel (data, variableID){
   });
 };
 
-
+// Inactive, see index.html
 // On change to the DOM, call optionChanged()
 // d3.selectAll("#selDataset").on("change", getData);
 
@@ -148,6 +143,7 @@ function getData(){
 };
 
 
+// Function that builds the plots with the variable Id that is selected.
 function BuildWithFilter(variableID) {
   d3.json("./data/samples.json").then(function(data) {
    
